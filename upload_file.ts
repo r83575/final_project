@@ -17,14 +17,32 @@ const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
  * @returns Promise<string> Success or error message
  */
 export async function upload_file(file_path: string, server_endpoint: string): Promise<string> {
+    // Logging helper
+    const log = (msg: string) => console.log(`[upload_file] ${msg}`);
+
+    log(`Starting upload for: ${file_path}`);
+
     // 1. Validate file existence
+    if (!fs.existsSync(file_path)) {
+        log('File does not exist.');
+        return 'Error: File does not exist.';
+    }
+
     // 2. Validate file size
+    const stats = fs.statSync(file_path);
+    if (stats.size > MAX_SIZE_BYTES) {
+        log(`File size (${stats.size}) exceeds max allowed (${MAX_SIZE_BYTES}).`);
+        return `Error: File size exceeds maximum allowed (${MAX_SIZE_BYTES} bytes).`;
+    }
+
     // 3. Validate file type
-    // 4. Log validation steps
-    // 5. Upload file with progress indicator
-    // 6. Handle network errors and retry
-    // 7. Verify upload integrity
-    // 8. Return success/error message
-    // ...implementation will be added step by step...
-    return 'Not implemented yet';
+    const ext = path.extname(file_path).toLowerCase();
+    if (!APPROVED_TYPES.includes(ext)) {
+        log(`File type ${ext} is not approved.`);
+        return `Error: File type ${ext} is not allowed.`;
+    }
+
+    log('File passed validation checks.');
+    // ...המשך מימוש בשלבים הבאים...
+    return 'Validation passed. Ready for upload.';
 }
