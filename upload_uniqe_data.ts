@@ -8,7 +8,7 @@ import { upload_file } from './upload_file';
  * @returns Promise<string> Success or error message
  */
 export async function upload_unique_file(file_path: string, server_endpoint: string): Promise<string> {
-	// בדיקה האם הקובץ כבר קיים בשרת
+    // Check if the file already exists on the server
 	try {
 		const checkResponse = await axios.get(`${server_endpoint}/exists`, {
 			params: { file_path }
@@ -20,6 +20,6 @@ export async function upload_unique_file(file_path: string, server_endpoint: str
 		return 'Error: Failed to check file existence on server.';
 	}
 
-	// אם הקובץ לא קיים, נעלה אותו
+	// If the file does not exist, upload it
 	return await upload_file(file_path, server_endpoint);
 }
