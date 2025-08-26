@@ -1,0 +1,6 @@
+// Enables ES6-style default imports for CommonJS modules (e.g. 'import fs from "fs"')
+{
+  "compilerOptions": {
+    "esModuleInterop": true
+  }
+}
