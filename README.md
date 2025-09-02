@@ -26,7 +26,7 @@ A TypeScript-based file upload service using Express.js, MongoDB, and Multer for
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone "https://github.com/r83575/final_project.git"
 cd final_project
 ```
 
