@@ -1,4 +1,4 @@
-import { saveFileMeta, getFileMeta, deleteFileMeta } from '../src/services/fileService.js';
+import { saveFileMeta, getFileMeta, deleteFileMeta, saveFileMetaWithoutDuplicates } from '../src/services/fileService.js';
 import File from '../src/models/File.js';
 
 // Mock mongoose model
@@ -99,6 +99,75 @@ describe('File Service', () => {
       const result = await deleteFileMeta('nonexistentId');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('saveFileMetaWithoutDuplicates', () => {
+    test('should save file metadata when no duplicate exists', async () => {
+      const fileMeta = {
+        filename: 'unique.pdf',
+        mimetype: 'application/pdf',
+        size: 1024,
+        path: 'uploads/unique.pdf',
+        uploadDate: new Date()
+      };
+
+      const savedFile = { ...fileMeta, _id: 'mockId' };
+      
+      // Mock that no existing file is found
+      mockFile.findOne = jest.fn().mockResolvedValue(null);
+      mockFile.prototype.save = jest.fn().mockResolvedValue(savedFile);
+
+      const result = await saveFileMetaWithoutDuplicates(fileMeta);
+
+      expect(mockFile.findOne).toHaveBeenCalledWith({ filename: 'unique.pdf' });
+      expect(mockFile).toHaveBeenCalledWith(fileMeta);
+      expect(result).toEqual(savedFile);
+    });
+
+    test('should throw error when duplicate file exists', async () => {
+      const fileMeta = {
+        filename: 'duplicate.pdf',
+        mimetype: 'application/pdf',
+        size: 1024,
+        path: 'uploads/duplicate.pdf',
+        uploadDate: new Date()
+      };
+
+      const existingFile = {
+        _id: 'existingId',
+        filename: 'duplicate.pdf',
+        mimetype: 'application/pdf',
+        size: 2048,
+        path: 'uploads/old-duplicate.pdf',
+        uploadDate: new Date()
+      };
+
+      // Mock that existing file is found
+      mockFile.findOne = jest.fn().mockResolvedValue(existingFile);
+
+      await expect(saveFileMetaWithoutDuplicates(fileMeta))
+        .rejects
+        .toThrow("File with name 'duplicate.pdf' already exists in the system");
+
+      expect(mockFile.findOne).toHaveBeenCalledWith({ filename: 'duplicate.pdf' });
+    });
+
+    test('should handle database error during duplicate check', async () => {
+      const fileMeta = {
+        filename: 'test.pdf',
+        mimetype: 'application/pdf',
+        size: 1024,
+        path: 'uploads/test.pdf',
+        uploadDate: new Date()
+      };
+
+      const dbError = new Error('Database connection failed');
+      mockFile.findOne = jest.fn().mockRejectedValue(dbError);
+
+      await expect(saveFileMetaWithoutDuplicates(fileMeta))
+        .rejects
+        .toThrow('Database connection failed');
     });
   });
 });

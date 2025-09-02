@@ -1,6 +1,6 @@
 import express from 'express';
 import { upload } from '../middleware/upload.js';
-import { saveFileMeta } from '../services/fileService.js';
+import { saveFileMetaWithoutDuplicates } from '../services/fileService.js';
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     if (!file) {
       return res.status(400).json({ error: 'File type is not allowed or no file uploaded' });
     }
-    const meta = await saveFileMeta({
+    const meta = await saveFileMetaWithoutDuplicates({
       filename: file.filename,
       mimetype: file.mimetype,
       size: file.size,
